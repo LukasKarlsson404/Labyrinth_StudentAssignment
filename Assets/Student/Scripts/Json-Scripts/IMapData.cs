@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public interface IMapData
 {
@@ -15,9 +15,20 @@ public interface IMapData
     Vector2Int GetQuestStart(int questIndex);
     Vector2Int GetQuestGoal(int questIndex);
 
-    // Vent-related methods
-    bool HasVent(int x, int y);
-    float GetVentCost(int x, int y);
-    List<Vector2Int> GetAllVentPositions();
-    List<Vector2Int> GetOtherVentPositions(Vector2Int currentVent);
+    // Directed jump connections supplied by the generated map.
+    bool HasJumpFrom(int x, int y);
+    bool TryGetJumpCost(Vector2Int from, Vector2Int to, out float cost);
+    List<JumpConnection> GetJumpsFrom(Vector2Int from);
+}
+
+public readonly struct JumpConnection
+{
+    public Vector2Int To { get; }
+    public float Cost { get; }
+
+    public JumpConnection(Vector2Int to, float cost)
+    {
+        To = to;
+        Cost = cost;
+    }
 }
