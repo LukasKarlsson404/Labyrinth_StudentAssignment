@@ -44,14 +44,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ccae118d0e6c6b45b522e58f33d99dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useSecondLevel: 0
   questIndex: 0
   hwallPrefab: {fileID: 246105549799885891, guid: e65178bce96d47847b481a6022fb8024, type: 3}
   vwallPrefab: {fileID: 246105549799885891, guid: 613d578cb6db3c14a94dfcfd7d9339da, type: 3}
   hWallLowPrefab: {fileID: 246105549799885891, guid: 56d16a514bbe38a48a5385403fcc73f1, type: 3}
   vWallLowPrefab: {fileID: 246105549799885891, guid: b1bf6c24a9aafc04aaf73563b328d1ec, type: 3}
   groundPrefab: {fileID: 916917378494744782, guid: 98f5378049f9b5745a77677f581b32b1, type: 3}
-  ventPrefab: {fileID: 1378172779303584491, guid: fd2de4bd876f4ac4980370e624362931, type: 3}
   startPrefab: {fileID: 7330026101753579403, guid: 7c6f507ad8411764db44657ab955b5d7, type: 3}
   endPrefab: {fileID: 1093558810265427060, guid: d983414088423d547a0c8de1c3bb6c1c, type: 3}
   grid: {fileID: 4909956963490026018, guid: 829eaf46fbcfe4846968ae391beda870, type: 3}
