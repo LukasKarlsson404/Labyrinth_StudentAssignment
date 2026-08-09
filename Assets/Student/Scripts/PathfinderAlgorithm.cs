@@ -3,10 +3,12 @@ using UnityEngine;
 
 public static class PathfindingAlgorithm
 {
-    // TODO: Implement the shortest-path search.
-    // Use the map dimensions, wall costs and directed jumps exposed by IMapData.
+    // TODO: Implement the pathfinding assignment here.
+    // Find the lowest-cost path from start to goal using the map dimensions, wall costs and directed jumps exposed by IMapData.
     public static List<Vector2Int> FindShortestPath(Vector2Int start, Vector2Int goal, IMapData mapData)
     {
+        // Most of your solution should be implemented in this method.
+
         Debug.LogWarning("FindShortestPath is not implemented.");
         return null;
     }
