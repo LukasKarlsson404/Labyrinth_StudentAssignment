@@ -11,12 +11,6 @@ public class MapData
     public Quest[] quests;
     public Jump[] jumps;
 
-    /// <summary>
-    /// Normalizes values that JsonUtility cannot distinguish from omitted fields.
-    /// In the generated JSON format, a wall without a cost is impassable.
-    /// JsonUtility deserializes an omitted float as 0, so those values are
-    /// converted to float.MaxValue after parsing.
-    /// </summary>
     public void NormalizeDefaults()
     {
         if (hwalls == null) hwalls = Array.Empty<Wall>();
@@ -33,9 +27,7 @@ public class MapData
         foreach (Wall wall in walls)
         {
             if (wall != null && wall.cost <= 0f)
-            {
                 wall.cost = float.MaxValue;
-            }
         }
     }
 }
