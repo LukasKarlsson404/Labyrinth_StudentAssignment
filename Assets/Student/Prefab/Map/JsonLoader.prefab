@@ -52,3 +52,10 @@ MonoBehaviour:
   startPrefab: {fileID: 7330026101753579403, guid: 7c6f507ad8411764db44657ab955b5d7, type: 3}
   endPrefab: {fileID: 1093558810265427060, guid: d983414088423d547a0c8de1c3bb6c1c, type: 3}
   grid: {fileID: 4909956963490026018, guid: 829eaf46fbcfe4846968ae391beda870, type: 3}
+  cameraPadding: 1.08
+  followCharacterCamera: 0
+  followDistance: 6
+  followHeight: 6
+  followLookHeight: 0.75
+  followSmoothSpeed: 6
+  followFieldOfView: 60
