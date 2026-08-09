@@ -22,6 +22,9 @@ public class JsonLoader : MonoBehaviour
     [Header("Grid Reference")]
     public Grid grid;
 
+    [Header("Camera Framing")]
+    [SerializeField, Range(1f, 1.5f)] private float cameraPadding = 1.08f;
+
     public MapData MapData { get; private set; }
     public int MinX => 0;
     public int MinY => 0;
@@ -31,6 +34,8 @@ public class JsonLoader : MonoBehaviour
     private GameObject generatedGround;
     private float hWallOffset = 0.5f;
     private float vWallOffset = 0.5f;
+    private int lastScreenWidth;
+    private int lastScreenHeight;
 
     private void Start()
     {
@@ -45,6 +50,9 @@ public class JsonLoader : MonoBehaviour
             previousQuestIndex = questIndex;
             RefreshQuestMarkers();
         }
+
+        if (MapData != null && (Screen.width != lastScreenWidth || Screen.height != lastScreenHeight))
+            FitCameraToMap();
     }
 
     private void CacheWallOffsets()
@@ -95,6 +103,7 @@ public class JsonLoader : MonoBehaviour
         SpawnWalls();
         GenerateGround();
         RefreshQuestMarkers();
+        FitCameraToMap();
 
         GridCharacterMovement character = FindAnyObjectByType<GridCharacterMovement>();
         if (character != null) character.InitializeCharacterAtStart();
@@ -182,8 +191,6 @@ public class JsonLoader : MonoBehaviour
 
         generatedGround = GameObject.CreatePrimitive(PrimitiveType.Plane);
         generatedGround.name = "Generated Ground";
-
-        // Unity's built-in Plane is 10x10 units, so scale it to the map dimensions.
         generatedGround.transform.position = new Vector3(
             worldWidth * 0.5f,
             grid.gridHeight - 0.01f,
@@ -194,6 +201,37 @@ public class JsonLoader : MonoBehaviour
             1f,
             worldHeight / 10f
         );
+    }
+
+    private void FitCameraToMap()
+    {
+        Camera mapCamera = Camera.main;
+        if (mapCamera == null || MapData == null || grid == null)
+            return;
+
+        float worldWidth = MapData.width * grid.cellSize;
+        float worldHeight = MapData.height * grid.cellSize;
+        float aspect = Mathf.Max(0.01f, mapCamera.aspect);
+
+        mapCamera.orthographic = true;
+
+        float verticalHalfSize = worldHeight * 0.5f;
+        float horizontalHalfSizeRequired = (worldWidth * 0.5f) / aspect;
+        mapCamera.orthographicSize = Mathf.Max(verticalHalfSize, horizontalHalfSizeRequired) * cameraPadding;
+
+        float cameraHeight = Mathf.Max(20f, Mathf.Max(worldWidth, worldHeight) * 0.25f);
+        mapCamera.transform.position = new Vector3(
+            worldWidth * 0.5f,
+            grid.gridHeight + cameraHeight,
+            worldHeight * 0.5f
+        );
+        mapCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+
+        mapCamera.nearClipPlane = 0.1f;
+        mapCamera.farClipPlane = cameraHeight + 100f;
+
+        lastScreenWidth = Screen.width;
+        lastScreenHeight = Screen.height;
     }
 
     private void RefreshQuestMarkers()
