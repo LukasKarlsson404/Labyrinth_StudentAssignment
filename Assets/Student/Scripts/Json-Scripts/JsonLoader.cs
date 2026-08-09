@@ -25,6 +25,14 @@ public class JsonLoader : MonoBehaviour
     [Header("Camera Framing")]
     [SerializeField, Range(1f, 1.5f)] private float cameraPadding = 1.08f;
 
+    [Header("Follow Camera")]
+    [SerializeField] private bool followCharacterCamera = false;
+    [SerializeField, Min(0.5f)] private float followDistance = 6f;
+    [SerializeField, Min(0.5f)] private float followHeight = 6f;
+    [SerializeField, Min(0f)] private float followLookHeight = 0.75f;
+    [SerializeField, Min(0.1f)] private float followSmoothSpeed = 6f;
+    [SerializeField, Range(30f, 90f)] private float followFieldOfView = 60f;
+
     public MapData MapData { get; private set; }
     public int MinX => 0;
     public int MinY => 0;
@@ -32,10 +40,12 @@ public class JsonLoader : MonoBehaviour
     private GameObject currentStartMarker;
     private GameObject currentEndMarker;
     private GameObject generatedGround;
+    private GridCharacterMovement characterController;
     private float hWallOffset = 0.5f;
     private float vWallOffset = 0.5f;
     private int lastScreenWidth;
     private int lastScreenHeight;
+    private bool previousFollowCharacterCamera;
 
     private void Start()
     {
@@ -51,8 +61,23 @@ public class JsonLoader : MonoBehaviour
             RefreshQuestMarkers();
         }
 
-        if (MapData != null && (Screen.width != lastScreenWidth || Screen.height != lastScreenHeight))
+        if (followCharacterCamera != previousFollowCharacterCamera)
+        {
+            previousFollowCharacterCamera = followCharacterCamera;
+            ApplyCameraMode(true);
+        }
+
+        if (!followCharacterCamera && MapData != null &&
+            (Screen.width != lastScreenWidth || Screen.height != lastScreenHeight))
+        {
             FitCameraToMap();
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (followCharacterCamera)
+            UpdateFollowCamera(false);
     }
 
     private void CacheWallOffsets()
@@ -103,10 +128,13 @@ public class JsonLoader : MonoBehaviour
         SpawnWalls();
         GenerateGround();
         RefreshQuestMarkers();
-        FitCameraToMap();
 
-        GridCharacterMovement character = FindAnyObjectByType<GridCharacterMovement>();
-        if (character != null) character.InitializeCharacterAtStart();
+        characterController = FindAnyObjectByType<GridCharacterMovement>();
+        if (characterController != null)
+            characterController.InitializeCharacterAtStart();
+
+        previousFollowCharacterCamera = followCharacterCamera;
+        ApplyCameraMode(true);
 
         Debug.Log($"Map loaded: {jsonFileName} ({MapData.width}x{MapData.height}, {MapData.jumps.Length} jumps)");
     }
@@ -203,6 +231,14 @@ public class JsonLoader : MonoBehaviour
         );
     }
 
+    private void ApplyCameraMode(bool snap)
+    {
+        if (followCharacterCamera)
+            UpdateFollowCamera(snap);
+        else
+            FitCameraToMap();
+    }
+
     private void FitCameraToMap()
     {
         Camera mapCamera = Camera.main;
@@ -232,6 +268,51 @@ public class JsonLoader : MonoBehaviour
 
         lastScreenWidth = Screen.width;
         lastScreenHeight = Screen.height;
+    }
+
+    private void UpdateFollowCamera(bool snap)
+    {
+        Camera mapCamera = Camera.main;
+        Transform target = GetFollowTarget();
+        if (mapCamera == null || target == null)
+            return;
+
+        mapCamera.orthographic = false;
+        mapCamera.fieldOfView = followFieldOfView;
+        mapCamera.nearClipPlane = 0.1f;
+        mapCamera.farClipPlane = Mathf.Max(1000f, followDistance + followHeight + 100f);
+
+        Vector3 forward = target.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 0.001f)
+            forward = Vector3.forward;
+        forward.Normalize();
+
+        Vector3 desiredPosition = target.position - forward * followDistance + Vector3.up * followHeight;
+        Vector3 lookTarget = target.position + Vector3.up * followLookHeight;
+        Quaternion desiredRotation = Quaternion.LookRotation(lookTarget - desiredPosition, Vector3.up);
+
+        if (snap)
+        {
+            mapCamera.transform.position = desiredPosition;
+            mapCamera.transform.rotation = desiredRotation;
+            return;
+        }
+
+        float blend = 1f - Mathf.Exp(-followSmoothSpeed * Time.deltaTime);
+        mapCamera.transform.position = Vector3.Lerp(mapCamera.transform.position, desiredPosition, blend);
+        mapCamera.transform.rotation = Quaternion.Slerp(mapCamera.transform.rotation, desiredRotation, blend);
+    }
+
+    private Transform GetFollowTarget()
+    {
+        if (characterController == null)
+            characterController = FindAnyObjectByType<GridCharacterMovement>();
+
+        if (characterController == null || characterController.transform.childCount == 0)
+            return null;
+
+        return characterController.transform.GetChild(characterController.transform.childCount - 1);
     }
 
     private void RefreshQuestMarkers()
