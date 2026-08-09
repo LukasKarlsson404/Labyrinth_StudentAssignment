@@ -32,7 +32,7 @@ public class PathfinderManager : MonoBehaviour
         MapData mapData = jsonLoader.GetMapData();
         if (mapData == null)
         {
-            Debug.LogError("No map data available!");
+            Debug.LogError("No map data available.");
             pathfindingUI?.UpdatePathNotFound();
             return;
         }
@@ -45,7 +45,7 @@ public class PathfinderManager : MonoBehaviour
         List<Vector2Int> path = PathfindingAlgorithm.FindShortestPath(startPos, goalPos, mapDataInterface);
         if (path == null || path.Count == 0)
         {
-            Debug.LogError("No path found. Make sure FindShortestPath is implemented correctly.");
+            Debug.LogError("No path found.");
             pathfindingUI?.UpdatePathNotFound();
             return;
         }
