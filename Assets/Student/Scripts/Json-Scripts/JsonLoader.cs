@@ -16,7 +16,6 @@ public class JsonLoader : MonoBehaviour
     public GameObject vwallPrefab;
     public GameObject hWallLowPrefab;
     public GameObject vWallLowPrefab;
-    public GameObject groundPrefab;
     public GameObject startPrefab;
     public GameObject endPrefab;
 
@@ -29,6 +28,7 @@ public class JsonLoader : MonoBehaviour
 
     private GameObject currentStartMarker;
     private GameObject currentEndMarker;
+    private GameObject generatedGround;
     private float hWallOffset = 0.5f;
     private float vWallOffset = 0.5f;
 
@@ -93,7 +93,7 @@ public class JsonLoader : MonoBehaviour
         previousQuestIndex = questIndex;
 
         SpawnWalls();
-        SpawnGroundTiles();
+        GenerateGround();
         RefreshQuestMarkers();
 
         GridCharacterMovement character = FindAnyObjectByType<GridCharacterMovement>();
@@ -172,6 +172,30 @@ public class JsonLoader : MonoBehaviour
         }
     }
 
+    private void GenerateGround()
+    {
+        if (generatedGround != null)
+            Destroy(generatedGround);
+
+        float worldWidth = MapData.width * grid.cellSize;
+        float worldHeight = MapData.height * grid.cellSize;
+
+        generatedGround = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        generatedGround.name = "Generated Ground";
+
+        // Unity's built-in Plane is 10x10 units, so scale it to the map dimensions.
+        generatedGround.transform.position = new Vector3(
+            worldWidth * 0.5f,
+            grid.gridHeight - 0.01f,
+            worldHeight * 0.5f
+        );
+        generatedGround.transform.localScale = new Vector3(
+            worldWidth / 10f,
+            1f,
+            worldHeight / 10f
+        );
+    }
+
     private void RefreshQuestMarkers()
     {
         if (currentStartMarker != null) Destroy(currentStartMarker);
@@ -198,20 +222,5 @@ public class JsonLoader : MonoBehaviour
         if (MapData?.quests == null || MapData.quests.Length == 0) return Vector2Int.zero;
         Quest quest = MapData.quests[Mathf.Clamp(questIndex, 0, MapData.quests.Length - 1)];
         return quest?.from == null ? Vector2Int.zero : new Vector2Int(quest.from.x, quest.from.y);
-    }
-
-    private void SpawnGroundTiles()
-    {
-        if (groundPrefab == null) return;
-
-        long tileCount = (long)grid.xSize * grid.zSize;
-        if (tileCount > 50000)
-            Debug.LogWarning($"Map has {tileCount} cells; one ground GameObject per cell may be expensive.");
-
-        for (int x = 0; x < grid.xSize; x++)
-        {
-            for (int y = 0; y < grid.zSize; y++)
-                Instantiate(groundPrefab, grid.GetCellCenter(x, y), Quaternion.identity);
-        }
     }
 }
