@@ -1,15 +1,13 @@
-﻿using UnityEngine;
 using System.IO;
-using System;
+using UnityEngine;
 
 public class JsonLoader : MonoBehaviour
 {
-    //Aviable filenames ex1.json" : "ex2.json"
-    [Header("Json Filename")]
+    [Header("JSON Filename")]
     public string fileName;
 
     [Header("Quest Selection")]
-    [Range(0, 2)]
+    [Min(0)]
     [SerializeField] private int questIndex = 0;
     private int previousQuestIndex = -1;
 
@@ -18,285 +16,202 @@ public class JsonLoader : MonoBehaviour
     public GameObject vwallPrefab;
     public GameObject hWallLowPrefab;
     public GameObject vWallLowPrefab;
-
     public GameObject groundPrefab;
-    public GameObject ventPrefab;
-
     public GameObject startPrefab;
     public GameObject endPrefab;
 
     [Header("Grid Reference")]
     public Grid grid;
 
-    // Public properties for external access
     public MapData MapData { get; private set; }
-    public int MinX { get; private set; }
-    public int MinY { get; private set; }
+    public int MinX => 0;
+    public int MinY => 0;
 
     private GameObject currentStartMarker;
     private GameObject currentEndMarker;
+    private float hWallOffset = 0.5f;
+    private float vWallOffset = 0.5f;
 
-    private float hWallOffset;
-    private float vWallOffset;
-
-    void Start()
+    private void Start()
     {
-        // Calculate wall offsets for proper positioning
-        GameObject tempH = Instantiate(hwallPrefab);
-        hWallOffset = tempH.GetComponent<Renderer>().bounds.size.x / 2f;
-        Destroy(tempH);
-
-        GameObject tempV = Instantiate(vwallPrefab);
-        vWallOffset = tempV.GetComponent<Renderer>().bounds.size.z / 2f;
-        Destroy(tempV);
-
+        CacheWallOffsets();
         LoadJsonFile(fileName);
-
     }
 
-    void Update()
+    private void Update()
     {
-        // Check if quest index has changed
         if (questIndex != previousQuestIndex)
         {
             previousQuestIndex = questIndex;
-
-            // Destroy old markers
-            if (currentStartMarker != null)
-                Destroy(currentStartMarker);
-            if (currentEndMarker != null)
-                Destroy(currentEndMarker);
-
-            // Spawn new markers
-            SpawnQuestMarkers();
+            RefreshQuestMarkers();
         }
     }
 
-    
-    public MapData GetMapData()
+    private void CacheWallOffsets()
     {
-        return MapData;
-    }
-
-    
-    public int GetQuestIndex()
-    {
-        return questIndex;
-    }
-
-    
-    public int GetMinX()
-    {
-        return MinX;
-    }
-
-    public int GetMinY()
-    {
-        return MinY;
-    }
-
-
-
-    public void LoadJsonFile(string fileName)
-    {
-        string path = Path.Combine(Application.streamingAssetsPath, fileName);
-
-        if (File.Exists(path))
+        if (hwallPrefab != null)
         {
-            string json = File.ReadAllText(path);
-            MapData = JsonHelper.FromJson<MapData>(json);
-
-            Debug.Log($"Map loaded successfully: {fileName}");
-
-            CalculateBounds();
-            SpawnWalls();
-            SpawnVents();
-            SpawnGroundTiles();
-            SpawnQuestMarkers();
-
-            GridCharacterMovement character = FindAnyObjectByType<GridCharacterMovement>();
-            if (character != null)
-            {
-                character.InitializeCharacterAtStart();
-            }
+            Renderer renderer = hwallPrefab.GetComponentInChildren<Renderer>();
+            if (renderer != null) hWallOffset = renderer.bounds.size.x / 2f;
         }
-        else
+
+        if (vwallPrefab != null)
+        {
+            Renderer renderer = vwallPrefab.GetComponentInChildren<Renderer>();
+            if (renderer != null) vWallOffset = renderer.bounds.size.z / 2f;
+        }
+    }
+
+    public MapData GetMapData() => MapData;
+    public int GetQuestIndex() => questIndex;
+    public int GetMinX() => 0;
+    public int GetMinY() => 0;
+
+    public void LoadJsonFile(string jsonFileName)
+    {
+        if (string.IsNullOrWhiteSpace(jsonFileName))
+        {
+            Debug.LogError("No JSON filename assigned to JsonLoader.");
+            return;
+        }
+
+        string path = Path.Combine(Application.streamingAssetsPath, jsonFileName);
+        if (!File.Exists(path))
         {
             Debug.LogError("Could not find file: " + path);
-        }
-    }
-
-    private void CalculateBounds()
-    {
-        if (MapData == null || MapData.hwalls == null || MapData.vwalls == null)
             return;
-
-        // Initialize min/max values
-        MinX = int.MaxValue;
-        MinY = int.MaxValue;
-        int maxX = int.MinValue;
-        int maxY = int.MinValue;
-
-        // Find bounds from horizontal walls
-        foreach (var wall in MapData.hwalls)
-        {
-            MinX = Mathf.Min(MinX, wall.x);
-            maxX = Mathf.Max(maxX, wall.x + 1);
-            MinY = Mathf.Min(MinY, wall.y);
-            maxY = Mathf.Max(maxY, wall.y);
         }
 
-        // Find bounds from vertical walls
-        foreach (var wall in MapData.vwalls)
-        {
-            MinX = Mathf.Min(MinX, wall.x);
-            maxX = Mathf.Max(maxX, wall.x);
-            MinY = Mathf.Min(MinY, wall.y);
-            maxY = Mathf.Max(maxY, wall.y + 1);
-        }
+        MapData = JsonHelper.FromJson<MapData>(File.ReadAllText(path));
+        if (!ValidateMapData()) return;
 
-        // Set normalized dimensions
-        MapData.width = maxX - MinX;
-        MapData.height = maxY - MinY;
-
-        // Update grid size
         grid.xSize = MapData.width;
         grid.zSize = MapData.height;
         grid.GenerateMesh();
+
+        questIndex = Mathf.Clamp(questIndex, 0, Mathf.Max(0, MapData.quests.Length - 1));
+        previousQuestIndex = questIndex;
+
+        SpawnWalls();
+        SpawnGroundTiles();
+        RefreshQuestMarkers();
+
+        GridCharacterMovement character = FindAnyObjectByType<GridCharacterMovement>();
+        if (character != null) character.InitializeCharacterAtStart();
+
+        Debug.Log($"Map loaded: {jsonFileName} ({MapData.width}x{MapData.height}, {MapData.jumps.Length} jumps)");
+    }
+
+    private bool ValidateMapData()
+    {
+        if (MapData == null)
+        {
+            Debug.LogError("JSON could not be parsed as MapData.");
+            return false;
+        }
+
+        if (MapData.width <= 0 || MapData.height <= 0)
+        {
+            Debug.LogError($"Invalid map size {MapData.width}x{MapData.height}.");
+            return false;
+        }
+
+        if (grid == null)
+        {
+            Debug.LogError("JsonLoader is missing its Grid reference.");
+            return false;
+        }
+
+        return true;
     }
 
     private void SpawnWalls()
     {
-        // Spawn horizontal walls
-        foreach (var wall in MapData.hwalls)
+        foreach (Wall wall in MapData.hwalls)
         {
-            Vector3 pos = new Vector3(wall.x - MinX + hWallOffset, 0, wall.y - MinY);
+            if (wall == null) continue;
+            Vector3 pos = new Vector3(wall.x + hWallOffset, 0, wall.y);
+            SpawnWallForCost(wall.cost, hwallPrefab, hWallLowPrefab, pos);
+        }
 
-            if (Mathf.Approximately(wall.cost, 5.5f))
-            {
-                Instantiate(hWallLowPrefab, pos, hWallLowPrefab.transform.rotation);
-            }
-            else if (Mathf.Approximately(wall.cost, float.MaxValue))
-            {
-                Instantiate(hwallPrefab, pos, hwallPrefab.transform.rotation);
-            }
-            // Otherwise: skip spawning
-        } 
-
-        // Spawn vertical walls
-        foreach (var wall in MapData.vwalls)
+        foreach (Wall wall in MapData.vwalls)
         {
-            Vector3 pos = new Vector3(wall.x - MinX, 0, wall.y - MinY + vWallOffset);
-
-            if (Mathf.Approximately(wall.cost, 5.5f))
-            {
-                Instantiate(vWallLowPrefab, pos, vWallLowPrefab.transform.rotation);
-            }
-            else if (Mathf.Approximately(wall.cost, float.MaxValue))
-            {
-                Instantiate(vwallPrefab, pos, vwallPrefab.transform.rotation);
-            }
-            // Otherwise: skip spawning
+            if (wall == null) continue;
+            Vector3 pos = new Vector3(wall.x, 0, wall.y + vWallOffset);
+            SpawnWallForCost(wall.cost, vwallPrefab, vWallLowPrefab, pos);
         }
 
         SpawnOuterBoundary();
     }
 
+    private static void SpawnWallForCost(float cost, GameObject solidPrefab, GameObject traversablePrefab, Vector3 position)
+    {
+        GameObject prefab = cost >= float.MaxValue ? solidPrefab : traversablePrefab;
+        if (prefab == null) prefab = solidPrefab;
+        if (prefab != null) Instantiate(prefab, position, prefab.transform.rotation);
+    }
 
     private void SpawnOuterBoundary()
     {
-        // Top and bottom boundaries
-        for (int x = 0; x < grid.xSize; x++)
+        if (hwallPrefab != null)
         {
-            Instantiate(hwallPrefab, new Vector3(x + hWallOffset, 0, 0), hwallPrefab.transform.rotation);
-            Instantiate(hwallPrefab, new Vector3(x + hWallOffset, 0, grid.zSize), hwallPrefab.transform.rotation);
+            for (int x = 0; x < grid.xSize; x++)
+            {
+                Instantiate(hwallPrefab, new Vector3(x + hWallOffset, 0, 0), hwallPrefab.transform.rotation);
+                Instantiate(hwallPrefab, new Vector3(x + hWallOffset, 0, grid.zSize), hwallPrefab.transform.rotation);
+            }
         }
 
-        // Left and right boundaries
-        for (int y = 0; y < grid.zSize; y++)
+        if (vwallPrefab != null)
         {
-            Instantiate(vwallPrefab, new Vector3(0, 0, y + vWallOffset), vwallPrefab.transform.rotation);
-            Instantiate(vwallPrefab, new Vector3(grid.xSize, 0, y + vWallOffset), vwallPrefab.transform.rotation);
+            for (int y = 0; y < grid.zSize; y++)
+            {
+                Instantiate(vwallPrefab, new Vector3(0, 0, y + vWallOffset), vwallPrefab.transform.rotation);
+                Instantiate(vwallPrefab, new Vector3(grid.xSize, 0, y + vWallOffset), vwallPrefab.transform.rotation);
+            }
         }
+    }
+
+    private void RefreshQuestMarkers()
+    {
+        if (currentStartMarker != null) Destroy(currentStartMarker);
+        if (currentEndMarker != null) Destroy(currentEndMarker);
+        SpawnQuestMarkers();
     }
 
     private void SpawnQuestMarkers()
     {
-        if (MapData?.quests == null || MapData.quests.Length == 0)
-        {
-            Debug.LogWarning("No quests found in map data.");
-            return;
-        }
+        if (MapData?.quests == null || MapData.quests.Length == 0) return;
+        if (questIndex < 0 || questIndex >= MapData.quests.Length) return;
 
-        if (questIndex < 0 || questIndex >= MapData.quests.Length)
-        {
-            Debug.LogWarning($"Quest index {questIndex} out of range.");
-            return;
-        }
+        Quest quest = MapData.quests[questIndex];
+        if (quest?.from == null || quest.to == null) return;
 
-        var quest = MapData.quests[questIndex];
-
-        // Convert to normalized grid coordinates
-        int fromX = quest.from.x - MinX;
-        int fromY = quest.from.y - MinY;
-        int toX = quest.to.x - MinX;
-        int toY = quest.to.y - MinY;
-
-        // Get world positions
-        Vector3 fromPos = grid.GetCellCenter(fromX, fromY);
-        Vector3 toPos = grid.GetCellCenter(toX, toY);
-
-        // Spawn markers
-        currentStartMarker = Instantiate(startPrefab, fromPos, Quaternion.identity);
-        currentEndMarker = Instantiate(endPrefab, toPos, Quaternion.identity);
-
-        Debug.Log($"Quest {questIndex}: Start({fromX}, {fromY}) → Goal({toX}, {toY})");
+        if (startPrefab != null)
+            currentStartMarker = Instantiate(startPrefab, grid.GetCellCenter(quest.from.x, quest.from.y), Quaternion.identity);
+        if (endPrefab != null)
+            currentEndMarker = Instantiate(endPrefab, grid.GetCellCenter(quest.to.x, quest.to.y), Quaternion.identity);
     }
 
     public Vector2Int GetStartGridPosition()
     {
-        if (MapData?.quests == null || MapData.quests.Length == 0)
-            return Vector2Int.zero;
-
-        var quest = MapData.quests[questIndex];
-        int fromX = quest.from.x - MinX;
-        int fromY = quest.from.y - MinY;
-
-        return new Vector2Int(fromX, fromY);
-    }
-
-    private void SpawnVents()
-    {
-        if (MapData?.vents == null || MapData.vents.Length == 0)
-            return;
-
-        foreach (var vent in MapData.vents)
-        {
-            int ventX = vent.x - MinX;
-            int ventY = vent.y - MinY;
-
-            Vector3 pos = grid.GetCellCenter(ventX, ventY);
-            pos.y += 0.015f;
-
-            Instantiate(ventPrefab, pos, Quaternion.identity);
-        }
+        if (MapData?.quests == null || MapData.quests.Length == 0) return Vector2Int.zero;
+        Quest quest = MapData.quests[Mathf.Clamp(questIndex, 0, MapData.quests.Length - 1)];
+        return quest?.from == null ? Vector2Int.zero : new Vector2Int(quest.from.x, quest.from.y);
     }
 
     private void SpawnGroundTiles()
     {
-        if (groundPrefab == null || grid == null)
-        {
-            Debug.LogWarning("Missing ground prefab or grid reference.");
-            return;
-        }
+        if (groundPrefab == null) return;
+
+        long tileCount = (long)grid.xSize * grid.zSize;
+        if (tileCount > 50000)
+            Debug.LogWarning($"Map has {tileCount} cells; one ground GameObject per cell may be expensive.");
 
         for (int x = 0; x < grid.xSize; x++)
         {
             for (int y = 0; y < grid.zSize; y++)
-            {
-                Vector3 centerPos = grid.GetCellCenter(x, y);
-                Instantiate(groundPrefab, centerPos, Quaternion.identity);
-            }
+                Instantiate(groundPrefab, grid.GetCellCenter(x, y), Quaternion.identity);
         }
     }
 }
