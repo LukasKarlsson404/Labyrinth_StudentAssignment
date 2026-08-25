@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -18,6 +19,7 @@ public class JsonLoader : MonoBehaviour
     public GameObject vWallLowPrefab;
     public GameObject startPrefab;
     public GameObject endPrefab;
+    public GameObject ventPrefab;
 
     [Header("Grid Reference")]
     public Grid grid;
@@ -40,6 +42,7 @@ public class JsonLoader : MonoBehaviour
     private GameObject currentStartMarker;
     private GameObject currentEndMarker;
     private GameObject generatedGround;
+    private GameObject jumpMarkerRoot;
     private GridCharacterMovement characterController;
     private float hWallOffset = 0.5f;
     private float vWallOffset = 0.5f;
@@ -127,6 +130,7 @@ public class JsonLoader : MonoBehaviour
 
         SpawnWalls();
         GenerateGround();
+        SpawnJumpMarkers();
         RefreshQuestMarkers();
 
         characterController = FindAnyObjectByType<GridCharacterMovement>();
@@ -186,6 +190,66 @@ public class JsonLoader : MonoBehaviour
         GameObject prefab = cost >= float.MaxValue ? solidPrefab : traversablePrefab;
         if (prefab == null) prefab = solidPrefab;
         if (prefab != null) Instantiate(prefab, position, prefab.transform.rotation);
+    }
+
+    private void SpawnJumpMarkers()
+    {
+        if (jumpMarkerRoot != null)
+            Destroy(jumpMarkerRoot);
+
+        jumpMarkerRoot = new GameObject("Jump and Vent Markers");
+        HashSet<Vector2Int> spawnedCells = new();
+
+        // Spawn the positions from legacy vent JSON directly.
+        if (MapData.vents != null)
+        {
+            foreach (Position vent in MapData.vents)
+            {
+                if (vent != null)
+                    SpawnJumpMarkerAt(vent.x, vent.y, spawnedCells);
+            }
+        }
+
+        // Also support the current jump format. Both endpoints are visualised,
+        // while the HashSet prevents duplicate objects on the same grid cell.
+        if (MapData.jumps != null)
+        {
+            foreach (Jump jump in MapData.jumps)
+            {
+                if (jump?.from != null)
+                    SpawnJumpMarkerAt(jump.from.x, jump.from.y, spawnedCells);
+                if (jump?.to != null)
+                    SpawnJumpMarkerAt(jump.to.x, jump.to.y, spawnedCells);
+            }
+        }
+    }
+
+    private void SpawnJumpMarkerAt(int x, int y, HashSet<Vector2Int> spawnedCells)
+    {
+        Vector2Int cell = new Vector2Int(x, y);
+        if (!spawnedCells.Add(cell)) return;
+        if (x < 0 || x >= MapData.width || y < 0 || y >= MapData.height) return;
+
+        Vector3 position = grid.GetCellCenter(x, y);
+        GameObject marker;
+
+        if (ventPrefab != null)
+        {
+            marker = Instantiate(ventPrefab, position, ventPrefab.transform.rotation, jumpMarkerRoot.transform);
+        }
+        else
+        {
+            // Visible fallback means malformed/missing prefab setup cannot make
+            // vents silently disappear again.
+            marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            marker.name = $"JumpMarker_{x}_{y}";
+            marker.transform.SetParent(jumpMarkerRoot.transform);
+            marker.transform.position = position + Vector3.up * 0.08f;
+            marker.transform.localScale = new Vector3(0.6f, 0.08f, 0.6f);
+
+            Collider collider = marker.GetComponent<Collider>();
+            if (collider != null) Destroy(collider);
+        }
     }
 
     private void SpawnOuterBoundary()
