@@ -9,7 +9,25 @@ public static class PathfindingAlgorithm
     {
         // Most of your solution should be implemented in this method.
 
-        Debug.LogWarning("FindShortestPath is not implemented.");
+        Graph graph = new Graph(mapData);
+
+        int startVertex = start.y * mapData.Width + start.x;
+        int goalVertex = goal.y * mapData.Width + goal.x;
+
+        BreadthFirstPath breadthFirstPath = new BreadthFirstPath(graph, startVertex);
+
+        if (breadthFirstPath.HasPathTo(goalVertex))
+        {
+            List<Vector2Int> path = new List<Vector2Int>();
+            foreach (int vertex in breadthFirstPath.PathTo(goalVertex))
+            {
+                int x = vertex % mapData.Width;
+                int y = vertex / mapData.Width;
+                path.Add(new Vector2Int(x, y));
+            }
+            return path;
+        }
+
         return null;
     }
 
