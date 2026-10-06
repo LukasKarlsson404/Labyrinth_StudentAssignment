@@ -1,0 +1,73 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class DijkstraShortestPath
+{
+    DirectedWeightedEdge[] edgeTo;
+    double[] distTo;
+    IndexMinPQ<double> pq;
+
+    public DijkstraShortestPath(WeightedEdgeDigraph weightedEdgeDiGraph, int source)
+    {
+        edgeTo = new DirectedWeightedEdge[weightedEdgeDiGraph.Vertices];
+        distTo = new double[weightedEdgeDiGraph.Vertices];
+        pq = new IndexMinPQ<double>(weightedEdgeDiGraph.Vertices);
+
+        for (int v = 0; v < weightedEdgeDiGraph.Vertices; v++)
+        {
+            distTo[v] = double.PositiveInfinity;
+        }
+
+        distTo[source] = 0.0;
+        pq.Insert(source, 0.0);
+        while (!pq.IsEmpty())
+        {
+            Relax(weightedEdgeDiGraph, pq.DeleteMin());
+        }
+    }
+
+    void Relax(WeightedEdgeDigraph weightedEdgeDiGraph, int v)
+    {
+        foreach (DirectedWeightedEdge edge in weightedEdgeDiGraph.GetNeighbors(v))
+        {
+            Debug.Log($"Relaxing edge from {v} to {edge.To()} with weight {edge.Weight()}");
+            int w = edge.To();
+            if (distTo[w] > distTo[v] + edge.Weight())
+            {
+                distTo[w] = distTo[v] + edge.Weight();
+                edgeTo[w] = edge;
+                if (pq.Contains(w))
+                {
+                    pq.ChangeKey(w, distTo[w]);
+                }
+                else
+                {
+                    pq.Insert(w, distTo[w]);
+                }
+            }
+        }
+    }
+
+    public double DistTo(int vertex)
+    {
+        return distTo[vertex];
+    }
+
+    public bool HasPathTo(int vertex)
+    {
+        return !(distTo[vertex] == double.PositiveInfinity);
+    }
+
+    public IEnumerable<DirectedWeightedEdge> PathTo(int vertex)
+    {
+        if (!HasPathTo(vertex))
+            return null;
+        Stack<DirectedWeightedEdge> path = new Stack<DirectedWeightedEdge>();
+        for (DirectedWeightedEdge edge = edgeTo[vertex]; edge != null; edge = edgeTo[edge.From()])
+        {
+            path.Push(edge);
+        }
+
+        return path;
+    }
+}

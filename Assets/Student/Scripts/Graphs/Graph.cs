@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 public class Graph
 {
     int vertices;
-    int edges; // Weighted edges can be found on page 642 in the book
+    int edges;
     ConcurrentBag<int>[] adjacencyList;
 
     public int Vertices => vertices;
@@ -43,8 +43,6 @@ public class Graph
                         }
                     }
                 }
-
-                // Add directed jump edges here when needed
             }
         }
     }

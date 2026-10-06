@@ -9,20 +9,20 @@ public static class PathfindingAlgorithm
     {
         // Most of your solution should be implemented in this method.
 
-        Graph graph = new Graph(mapData);
+        WeightedEdgeDigraph graph = new WeightedEdgeDigraph(mapData);
 
         int startVertex = start.y * mapData.Width + start.x;
         int goalVertex = goal.y * mapData.Width + goal.x;
 
-        BreadthFirstPath breadthFirstPath = new BreadthFirstPath(graph, startVertex);
+        DijkstraShortestPath dijkstraShortestPath = new DijkstraShortestPath(graph, startVertex);
 
-        if (breadthFirstPath.HasPathTo(goalVertex))
+        if (dijkstraShortestPath.HasPathTo(goalVertex))
         {
             List<Vector2Int> path = new List<Vector2Int>();
-            foreach (int vertex in breadthFirstPath.PathTo(goalVertex))
+            foreach (DirectedWeightedEdge edge in dijkstraShortestPath.PathTo(goalVertex))
             {
-                int x = vertex % mapData.Width;
-                int y = vertex / mapData.Width;
+                int x = edge.To() % mapData.Width;
+                int y = edge.To() / mapData.Width;
                 path.Add(new Vector2Int(x, y));
             }
             return path;
