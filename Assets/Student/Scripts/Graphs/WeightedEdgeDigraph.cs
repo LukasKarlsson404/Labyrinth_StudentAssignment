@@ -44,24 +44,24 @@ public class WeightedEdgeDigraph
                             int neighborVertex = neighborPosition.y * mapData.Width + neighborPosition.x;
 
                             // Walls are placed to the left and below the tile, so we need to check the direction to determine which wall cost to use
-                            if (neighborPosition + Vector2Int.left == currentPosition) // Neighbor is to the left
-                            {
-                                double weight = mapData.GetVerticalWallCost(neighborPosition.x, neighborPosition.y);
-                                AddEdge(new DirectedWeightedEdge(currentVertex, neighborVertex, weight));
-                            }
-                            else if (neighborPosition + Vector2Int.right == currentPosition) // Neighbor is to the right
+                            if (currentPosition + Vector2Int.left == neighborPosition) // Neighbor is to the left
                             {
                                 double weight = mapData.GetVerticalWallCost(currentPosition.x, currentPosition.y);
                                 AddEdge(new DirectedWeightedEdge(currentVertex, neighborVertex, weight));
                             }
-                            else if (neighborPosition + Vector2Int.down == currentPosition) // Neighbor is below
+                            else if (currentPosition + Vector2Int.right == neighborPosition) // Neighbor is to the right
                             {
-                                double weight = mapData.GetHorizontalWallCost(neighborPosition.x, neighborPosition.y);
+                                double weight = mapData.GetVerticalWallCost(neighborPosition.x, neighborPosition.y);
                                 AddEdge(new DirectedWeightedEdge(currentVertex, neighborVertex, weight));
                             }
-                            else if (neighborPosition + Vector2Int.up == currentPosition) // Neighbor is above
+                            else if (currentPosition + Vector2Int.down == neighborPosition) // Neighbor is below
                             {
                                 double weight = mapData.GetHorizontalWallCost(currentPosition.x, currentPosition.y);
+                                AddEdge(new DirectedWeightedEdge(currentVertex, neighborVertex, weight));
+                            }
+                            else if (currentPosition + Vector2Int.up == neighborPosition) // Neighbor is above
+                            {
+                                double weight = mapData.GetHorizontalWallCost(neighborPosition.x, neighborPosition.y);
                                 AddEdge(new DirectedWeightedEdge(currentVertex, neighborVertex, weight));
                             }
                         }

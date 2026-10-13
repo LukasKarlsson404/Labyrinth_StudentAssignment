@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 
 public class IndexMinPQ<T>
 {
@@ -12,7 +13,7 @@ public class IndexMinPQ<T>
     {
         if (maxN < 0)
         {
-            throw new System.ArgumentException("maxN must be non-negative");
+            throw new ArgumentException("maxN must be non-negative");
         }
 
         this.maxN = maxN;
@@ -32,7 +33,7 @@ public class IndexMinPQ<T>
         {
             if (Contains(index))
             {
-                throw new System.ArgumentException("Index is already in the priority queue");
+                throw new ArgumentException("Index is already in the priority queue");
             }
             n++;
             qp[index] = n;
@@ -48,7 +49,7 @@ public class IndexMinPQ<T>
         {
             if (!Contains(index))
             {
-                throw new System.ArgumentException("Index is not in the priority queue");
+                throw new ArgumentException("Index is not in the priority queue");
             }
             keys[index] = key;
             Swim(qp[index]);
@@ -72,7 +73,7 @@ public class IndexMinPQ<T>
         {
             if (!Contains(index))
             {
-                throw new System.ArgumentException("Index is not in the priority queue");
+                throw new ArgumentException("Index is not in the priority queue");
             }
             int i = qp[index];
             Exchange(i, n--);
@@ -87,7 +88,7 @@ public class IndexMinPQ<T>
     {
         if (n == 0)
         {
-            throw new System.InvalidOperationException("Priority queue underflow");
+            throw new InvalidOperationException("Priority queue underflow");
         }
 
         return keys[pq[1]];
@@ -97,7 +98,7 @@ public class IndexMinPQ<T>
     {
         if (n == 0)
         {
-            throw new System.InvalidOperationException("Priority queue underflow");
+            throw new InvalidOperationException("Priority queue underflow");
         }
         return pq[1];
     }
@@ -106,7 +107,7 @@ public class IndexMinPQ<T>
     {
         if (n == 0)
         {
-            throw new System.InvalidOperationException("Priority queue underflow");
+            throw new InvalidOperationException("Priority queue underflow");
         }
 
         int minIndex = pq[1];
