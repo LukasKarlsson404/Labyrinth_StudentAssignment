@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 
 public static class PathfindingAlgorithm
@@ -14,12 +15,19 @@ public static class PathfindingAlgorithm
         int startVertex = start.y * mapData.Width + start.x;
         int goalVertex = goal.y * mapData.Width + goal.x;
 
-        DijkstraShortestPath dijkstraShortestPath = new DijkstraShortestPath(graph, startVertex);
+        Stopwatch stopwatch = Stopwatch.StartNew();
 
-        if (dijkstraShortestPath.HasPathTo(goalVertex))
+        //DijkstraShortestPath pathfinder = new DijkstraShortestPath(graph, startVertex);
+        AStarPathFinding pathfinder = new AStarPathFinding(graph, startVertex, goalVertex);
+
+        stopwatch.Stop();
+
+        UnityEngine.Debug.Log($"Pathfinding took {stopwatch.ElapsedMilliseconds} ms");
+
+        if (pathfinder.HasPathTo(goalVertex))
         {
             List<Vector2Int> path = new List<Vector2Int>();
-            foreach (DirectedWeightedEdge edge in dijkstraShortestPath.PathTo(goalVertex))
+            foreach (DirectedWeightedEdge edge in pathfinder.PathTo(goalVertex))
             {
                 int x = edge.To() % mapData.Width;
                 int y = edge.To() / mapData.Width;

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Diagnostics;
 
 public class IndexMinPQ<T>
 {
@@ -33,7 +32,6 @@ public class IndexMinPQ<T>
         {
             if (Contains(index))
             {
-                UnityEngine.Debug.LogError($"Index {index} is already in the priority queue");
                 throw new System.ArgumentException("Index is already in the priority queue");
             }
             n++;
@@ -41,10 +39,6 @@ public class IndexMinPQ<T>
             pq[n] = index;
             keys[index] = key;
             Swim(n);
-        }
-        else
-        {
-            UnityEngine.Debug.LogError($"Index {index} is out of bounds");
         }
     }
 
@@ -54,17 +48,11 @@ public class IndexMinPQ<T>
         {
             if (!Contains(index))
             {
-                UnityEngine.Debug.LogError($"Index {index} is not in the priority queue");
                 throw new System.ArgumentException("Index is not in the priority queue");
             }
-            UnityEngine.Debug.Log($"Changing key for index {index} to {key}");
             keys[index] = key;
             Swim(qp[index]);
             Sink(qp[index]);
-        }
-        else
-        {
-            UnityEngine.Debug.LogError($"Index {index} is out of bounds");
         }
     }
 
@@ -124,7 +112,6 @@ public class IndexMinPQ<T>
         int minIndex = pq[1];
         Exchange(1, n--);
         Sink(1);
-        Debug.Assert(pq[n + 1] == minIndex);
         qp[minIndex] = -1; // delete
         keys[minIndex] = default; // to avoid loitering
 

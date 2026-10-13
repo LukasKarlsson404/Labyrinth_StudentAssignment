@@ -7,12 +7,15 @@ public class WeightedEdgeDigraph
     int vertices;
     int edges;
     ConcurrentBag<DirectedWeightedEdge>[] adjacencyList;
+    IMapData mapData;
 
     public int Vertices => vertices;
     public int Edges => edges;
+    public IMapData MapData => mapData;
 
     public WeightedEdgeDigraph(IMapData mapData)
     {
+        this.mapData = mapData;
         vertices = mapData.Width * mapData.Height;
         edges = 0;
         adjacencyList = new ConcurrentBag<DirectedWeightedEdge>[vertices];

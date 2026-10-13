@@ -20,17 +20,22 @@ public class DijkstraShortestPath
 
         distTo[source] = 0.0;
         pq.Insert(source, 0.0);
+
+        int iterations = 0;
+
         while (!pq.IsEmpty())
         {
+            iterations++;
             Relax(weightedEdgeDiGraph, pq.DeleteMin());
         }
+
+        Debug.Log($"Dijkstra's algorithm completed in {iterations} iterations.");
     }
 
     void Relax(WeightedEdgeDigraph weightedEdgeDiGraph, int v)
     {
         foreach (DirectedWeightedEdge edge in weightedEdgeDiGraph.GetNeighbors(v))
         {
-            Debug.Log($"Relaxing edge from {v} to {edge.To()} with weight {edge.Weight()}");
             int w = edge.To();
             if (distTo[w] > distTo[v] + edge.Weight())
             {
