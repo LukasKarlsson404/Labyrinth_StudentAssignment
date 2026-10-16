@@ -5,7 +5,6 @@ public class AStarPathFinding
 {
     double[] gValue;
     double[] hValue;
-    //double[] fValue;
     IndexMinPQ<double> open;
     HashSet<int> closed;
     DirectedWeightedEdge[] edgeTo;
@@ -19,7 +18,6 @@ public class AStarPathFinding
     {
         gValue = new double[weightedEdgeDiGraph.Vertices];
         hValue = new double[weightedEdgeDiGraph.Vertices];
-        //fValue = new double[weightedEdgeDiGraph.Vertices];
         open = new IndexMinPQ<double>(weightedEdgeDiGraph.Vertices);
         closed = new (weightedEdgeDiGraph.Vertices);
         edgeTo = new DirectedWeightedEdge[weightedEdgeDiGraph.Vertices];
@@ -58,7 +56,6 @@ public class AStarPathFinding
 
                 gValue[neighbor] = neighborsNewGValue;
                 hValue[neighbor] = Heuristic(neighbor, target, weightedEdgeDiGraph.MapData);
-                //fValue[neighbor] = gValue[neighbor] + hValue[neighbor];
                 edgeTo[neighbor] = edge;
 
                 if (closed.Contains(neighbor))
@@ -103,15 +100,15 @@ public class AStarPathFinding
         return hasPath;
     }
 
-    public IEnumerable<DirectedWeightedEdge> PathTo(int vertex)
+    public IEnumerable<int> PathTo(int vertex)
     {
         if (!HasPathTo(vertex))
             return null;
 
-        Stack<DirectedWeightedEdge> path = new Stack<DirectedWeightedEdge>();
+        Stack<int> path = new Stack<int>();
         for (DirectedWeightedEdge edge = edgeTo[vertex]; edge != null; edge = edgeTo[edge.From()])
         {
-            path.Push(edge);
+            path.Push(edge.From());
         }
 
         return path;

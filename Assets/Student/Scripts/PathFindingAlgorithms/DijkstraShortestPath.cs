@@ -63,14 +63,14 @@ public class DijkstraShortestPath
         return !(distTo[vertex] == double.PositiveInfinity);
     }
 
-    public IEnumerable<DirectedWeightedEdge> PathTo(int vertex)
+    public IEnumerable<int> PathTo(int vertex)
     {
         if (!HasPathTo(vertex))
             return null;
-        Stack<DirectedWeightedEdge> path = new Stack<DirectedWeightedEdge>();
+        Stack<int> path = new Stack<int>();
         for (DirectedWeightedEdge edge = edgeTo[vertex]; edge != null; edge = edgeTo[edge.From()])
         {
-            path.Push(edge);
+            path.Push(edge.From());
         }
 
         return path;
