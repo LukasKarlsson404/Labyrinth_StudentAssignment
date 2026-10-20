@@ -25,6 +25,8 @@ public class WeightedEdgeDigraph
             adjacencyList[i] = new ConcurrentBag<DirectedWeightedEdge>();
         }
 
+        Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+
         for (int x = 0; x < mapData.Width; x++)
         {
             for (int y = 0; y < mapData.Height; y++)
@@ -33,7 +35,6 @@ public class WeightedEdgeDigraph
 
                 // Add edges to adjacent vertices if movement is not blocked
                 Vector2Int currentPosition = new Vector2Int(x, y);
-                Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
                 foreach (Vector2Int direction in directions)
                 {
                     Vector2Int neighborPosition = currentPosition + direction;

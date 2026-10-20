@@ -21,7 +21,9 @@ public class Graph
         {
             adjacencyList[i] = new ConcurrentBag<int>();
         }
-        
+
+        Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+
         for (int x = 0; x < mapData.Width; x++)
         {
             for (int y = 0; y < mapData.Height; y++)
@@ -30,7 +32,6 @@ public class Graph
 
                 // Add edges to adjacent vertices if movement is not blocked
                 Vector2Int currentPosition = new Vector2Int(x, y);
-                Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
                 foreach (Vector2Int direction in directions)
                 {
                     Vector2Int neighborPos = currentPosition + direction;
