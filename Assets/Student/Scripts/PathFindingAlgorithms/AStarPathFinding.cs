@@ -21,7 +21,7 @@ public class AStarPathFinding
         gValue = new double[weightedEdgeDiGraph.Vertices];
         hValue = new double[weightedEdgeDiGraph.Vertices];
         open = new IndexMinPQ<double>(weightedEdgeDiGraph.Vertices);
-        closed = new (weightedEdgeDiGraph.Vertices);
+        closed = new HashSet<int>(weightedEdgeDiGraph.Vertices);
         edgeTo = new DirectedWeightedEdge[weightedEdgeDiGraph.Vertices];
 
         edgeTo[source] = null;

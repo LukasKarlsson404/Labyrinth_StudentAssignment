@@ -1,0 +1,19 @@
+{
+  "width": 5,
+  "height": 1,
+  "hwalls": [],
+  "vwalls": [],
+  "jumps": [],
+  "quests": [
+    {
+      "from": {
+        "x": 3,
+        "y": 0
+      },
+      "to": {
+        "x": 0,
+        "y": 0
+      }
+    }
+  ]
+}
