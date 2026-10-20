@@ -16,6 +16,8 @@ public class AStarPathFinding
 
     public AStarPathFinding(WeightedEdgeDigraph weightedEdgeDiGraph, int source, int target)
     {
+        Debug.Log($"{weightedEdgeDiGraph.Edges} edges");
+
         gValue = new double[weightedEdgeDiGraph.Vertices];
         hValue = new double[weightedEdgeDiGraph.Vertices];
         open = new IndexMinPQ<double>(weightedEdgeDiGraph.Vertices);
@@ -106,6 +108,9 @@ public class AStarPathFinding
             return null;
 
         Stack<int> path = new Stack<int>();
+
+        path.Push(vertex);
+
         for (DirectedWeightedEdge edge = edgeTo[vertex]; edge != null; edge = edgeTo[edge.From()])
         {
             path.Push(edge.From());

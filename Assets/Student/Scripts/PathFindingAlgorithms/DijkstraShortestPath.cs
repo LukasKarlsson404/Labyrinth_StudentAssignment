@@ -9,6 +9,8 @@ public class DijkstraShortestPath
 
     public DijkstraShortestPath(WeightedEdgeDigraph weightedEdgeDiGraph, int source)
     {
+        Debug.Log($"{weightedEdgeDiGraph.Edges} edges");
+
         edgeTo = new DirectedWeightedEdge[weightedEdgeDiGraph.Vertices];
         distTo = new double[weightedEdgeDiGraph.Vertices];
         pq = new IndexMinPQ<double>(weightedEdgeDiGraph.Vertices);
@@ -68,6 +70,9 @@ public class DijkstraShortestPath
         if (!HasPathTo(vertex))
             return null;
         Stack<int> path = new Stack<int>();
+
+        path.Push(vertex);
+
         for (DirectedWeightedEdge edge = edgeTo[vertex]; edge != null; edge = edgeTo[edge.From()])
         {
             path.Push(edge.From());
