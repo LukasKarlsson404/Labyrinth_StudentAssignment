@@ -1,16 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DijkstraShortestPath
+public class DijkstraShortestPath : PathFinder
 {
     DirectedWeightedEdge[] edgeTo;
     double[] distTo;
     IndexMinPQ<double> pq;
 
-    public DijkstraShortestPath(WeightedEdgeDigraph weightedEdgeDiGraph, int source)
+    public DijkstraShortestPath(WeightedEdgeDigraph weightedEdgeDiGraph, int source) : base(weightedEdgeDiGraph)
     {
-        Debug.Log($"{weightedEdgeDiGraph.Edges} edges");
-
         edgeTo = new DirectedWeightedEdge[weightedEdgeDiGraph.Vertices];
         distTo = new double[weightedEdgeDiGraph.Vertices];
         pq = new IndexMinPQ<double>(weightedEdgeDiGraph.Vertices);
@@ -30,8 +28,6 @@ public class DijkstraShortestPath
             iterations++;
             Relax(weightedEdgeDiGraph, pq.DeleteMin());
         }
-
-        Debug.Log($"Dijkstra's algorithm completed in {iterations} iterations.");
     }
 
     void Relax(WeightedEdgeDigraph weightedEdgeDiGraph, int v)
@@ -60,12 +56,12 @@ public class DijkstraShortestPath
         return distTo[vertex];
     }
 
-    public bool HasPathTo(int vertex)
+    public override bool HasPathTo(int vertex)
     {
         return !(distTo[vertex] == double.PositiveInfinity);
     }
 
-    public IEnumerable<int> PathTo(int vertex)
+    public override IEnumerable<int> PathTo(int vertex)
     {
         if (!HasPathTo(vertex))
             return null;

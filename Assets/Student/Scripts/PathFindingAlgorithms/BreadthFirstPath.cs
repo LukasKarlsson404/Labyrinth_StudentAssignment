@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BreadthFirstPath
+public class BreadthFirstPath : PathFinder
 {
     bool[] marked;
     int[] edgeTo;
     int source;
 
-    public BreadthFirstPath(Graph graph, int source)
+    public BreadthFirstPath(NormalGraph graph, int source) : base (graph)
     {
         this.source = source;
         marked = new bool[graph.Vertices];
@@ -15,7 +15,7 @@ public class BreadthFirstPath
         BFS(graph, source);
     }
 
-    private void BFS(Graph graph, int s)
+    private void BFS(NormalGraph graph, int s)
     {
         Queue<int> queue = new Queue<int>();
         
@@ -37,12 +37,12 @@ public class BreadthFirstPath
         }
     }
 
-    public bool HasPathTo(int v)
+    public override bool HasPathTo(int v)
     {
         return marked[v];
     }
 
-    public IEnumerable<int> PathTo(int vertex)
+    public override IEnumerable<int> PathTo(int vertex)
     {
         if (!HasPathTo(vertex))
             return null;

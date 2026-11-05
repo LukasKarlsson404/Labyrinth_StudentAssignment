@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using UnityEngine;
 
@@ -6,25 +7,32 @@ public static class PathfindingAlgorithm
 {
     // TODO: Implement the pathfinding assignment here.
     // Find the lowest-cost path from start to goal using the map dimensions, wall costs and directed jumps exposed by IMapData.
-    public static List<Vector2Int> FindShortestPath(Vector2Int start, Vector2Int goal, IMapData mapData)
+    public static List<Vector2Int> FindShortestPath(Vector2Int start, Vector2Int goal, IMapData mapData, SearchAlgorithm searchAlgorithm)
     {
         // Most of your solution should be implemented in this method.
-
-        Graph graph = new Graph(mapData);
-        WeightedEdgeDigraph weightedEdgeDigraph = new WeightedEdgeDigraph(mapData);
 
         int startVertex = start.y * mapData.Width + start.x;
         int goalVertex = goal.y * mapData.Width + goal.x;
 
-        Stopwatch stopwatch = Stopwatch.StartNew();
+        PathFinder pathfinder;
 
-        BreadthFirstPath pathfinder = new BreadthFirstPath(graph, startVertex);
-        //DijkstraShortestPath pathfinder = new DijkstraShortestPath(weightedEdgeDigraph, startVertex);
-        //AStarPathFinding pathfinder = new AStarPathFinding(weightedEdgeDigraph, startVertex, goalVertex);
-
-        stopwatch.Stop();
-
-        UnityEngine.Debug.Log($"Pathfinding took {stopwatch.ElapsedMilliseconds} ms");
+        switch (searchAlgorithm)
+        {
+            case SearchAlgorithm.BreadthFirstSearch:
+                NormalGraph graph = new NormalGraph(mapData);
+                pathfinder = new BreadthFirstPath(graph, startVertex);
+                break;
+            case SearchAlgorithm.Dijkstra:
+                WeightedEdgeDigraph weightedEdgeDigraph = new WeightedEdgeDigraph(mapData);
+                pathfinder = new DijkstraShortestPath(weightedEdgeDigraph, startVertex);
+                break;
+            case SearchAlgorithm.AStar:
+                weightedEdgeDigraph = new WeightedEdgeDigraph(mapData);
+                pathfinder = new AStarPathFinding(weightedEdgeDigraph, startVertex, goalVertex);
+                break;
+            default: // Don't think this will ever be used but needed to not cause compiler error
+                throw new InvalidEnumArgumentException("Selected type is not valid"); 
+        }
 
         if (pathfinder.HasPathTo(goalVertex))
         {
