@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
-public class WeightedEdgeDigraph : Graph
+public class WeightedEdgeDigraph
 {
     int vertices;
     int edges;

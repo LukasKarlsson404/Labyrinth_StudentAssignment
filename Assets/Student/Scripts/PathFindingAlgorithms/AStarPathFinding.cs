@@ -14,7 +14,7 @@ public class AStarPathFinding : PathFinder
         return gValue[vertex] + hValue[vertex];
     }
 
-    public AStarPathFinding(WeightedEdgeDigraph weightedEdgeDiGraph, int source, int target) : base(weightedEdgeDiGraph)
+    public AStarPathFinding(WeightedEdgeDigraph weightedEdgeDiGraph, int source, int target)
     {
         gValue = new double[weightedEdgeDiGraph.Vertices];
         hValue = new double[weightedEdgeDiGraph.Vertices];

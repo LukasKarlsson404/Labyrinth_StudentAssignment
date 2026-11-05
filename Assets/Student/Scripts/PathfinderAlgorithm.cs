@@ -19,7 +19,7 @@ public static class PathfindingAlgorithm
         switch (searchAlgorithm)
         {
             case SearchAlgorithm.BreadthFirstSearch:
-                NormalGraph graph = new NormalGraph(mapData);
+                Graph graph = new Graph(mapData);
                 pathfinder = new BreadthFirstPath(graph, startVertex);
                 break;
             case SearchAlgorithm.Dijkstra:

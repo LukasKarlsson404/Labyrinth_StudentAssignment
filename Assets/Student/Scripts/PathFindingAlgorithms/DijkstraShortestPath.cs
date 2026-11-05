@@ -7,7 +7,7 @@ public class DijkstraShortestPath : PathFinder
     double[] distTo;
     IndexMinPQ<double> pq;
 
-    public DijkstraShortestPath(WeightedEdgeDigraph weightedEdgeDiGraph, int source) : base(weightedEdgeDiGraph)
+    public DijkstraShortestPath(WeightedEdgeDigraph weightedEdgeDiGraph, int source)
     {
         edgeTo = new DirectedWeightedEdge[weightedEdgeDiGraph.Vertices];
         distTo = new double[weightedEdgeDiGraph.Vertices];

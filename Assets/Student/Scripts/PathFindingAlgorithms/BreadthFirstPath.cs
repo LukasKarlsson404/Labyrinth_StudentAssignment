@@ -7,7 +7,7 @@ public class BreadthFirstPath : PathFinder
     int[] edgeTo;
     int source;
 
-    public BreadthFirstPath(NormalGraph graph, int source) : base (graph)
+    public BreadthFirstPath(Graph graph, int source)
     {
         this.source = source;
         marked = new bool[graph.Vertices];
@@ -15,7 +15,7 @@ public class BreadthFirstPath : PathFinder
         BFS(graph, source);
     }
 
-    private void BFS(NormalGraph graph, int s)
+    private void BFS(Graph graph, int s)
     {
         Queue<int> queue = new Queue<int>();
         
