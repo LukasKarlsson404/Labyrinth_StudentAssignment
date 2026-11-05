@@ -466,7 +466,7 @@ PrefabInstance:
       objectReference: {fileID: 2120782614}
     - target: {fileID: 2697895973313742624, guid: 0a7983cc724fc554a9cbc4ef450723a9, type: 3}
       propertyPath: fileName
-      value: ex6.json
+      value: ex2.json
       objectReference: {fileID: 0}
     - target: {fileID: 2697895973313742624, guid: 0a7983cc724fc554a9cbc4ef450723a9, type: 3}
       propertyPath: endPrefab
@@ -1435,6 +1435,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd381c2f482a8a0499d9482baebd7f42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  searchAlgorithm: 0
   jsonLoader: {fileID: 226252185}
   characterMovement: {fileID: 1309089254}
   pathfindingUI: {fileID: 0}

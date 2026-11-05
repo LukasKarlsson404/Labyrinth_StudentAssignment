@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AStarPathFinding
+public class AStarPathFinding : PathFinder
 {
     double[] gValue;
     double[] hValue;
@@ -14,10 +14,8 @@ public class AStarPathFinding
         return gValue[vertex] + hValue[vertex];
     }
 
-    public AStarPathFinding(WeightedEdgeDigraph weightedEdgeDiGraph, int source, int target)
+    public AStarPathFinding(WeightedEdgeDigraph weightedEdgeDiGraph, int source, int target) : base(weightedEdgeDiGraph)
     {
-        Debug.Log($"{weightedEdgeDiGraph.Edges} edges");
-
         gValue = new double[weightedEdgeDiGraph.Vertices];
         hValue = new double[weightedEdgeDiGraph.Vertices];
         open = new IndexMinPQ<double>(weightedEdgeDiGraph.Vertices);
@@ -27,12 +25,8 @@ public class AStarPathFinding
         edgeTo[source] = null;
         open.Insert(source, 0.0);
 
-        int iterations = 0;
-
         while (!open.IsEmpty())
         {
-            iterations++;
-
             int current = open.DeleteMin();
 
             if (current == target)
@@ -73,8 +67,6 @@ public class AStarPathFinding
 
             closed.Add(current);
         }
-
-        Debug.Log($"A* Pathfinding completed in {iterations} iterations");
     }
 
     double Heuristic(int vertex, int target, IMapData mapData)
@@ -89,7 +81,7 @@ public class AStarPathFinding
         return gValue[vertex];
     }
 
-    public bool HasPathTo(int vertex)
+    public override bool HasPathTo(int vertex)
     {
         bool hasPath = closed.Contains(vertex) || open.Contains(vertex);
 
@@ -102,7 +94,7 @@ public class AStarPathFinding
         return hasPath;
     }
 
-    public IEnumerable<int> PathTo(int vertex)
+    public override IEnumerable<int> PathTo(int vertex)
     {
         if (!HasPathTo(vertex))
             return null;

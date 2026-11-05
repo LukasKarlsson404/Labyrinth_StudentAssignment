@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class PathfinderManager : MonoBehaviour
 {
+    [Header("Pathfinding Algorithm")]
+    [SerializeField] SearchAlgorithm searchAlgorithm = SearchAlgorithm.BreadthFirstSearch;
+
     [Header("References")]
     public JsonLoader jsonLoader;
     public GridCharacterMovement characterMovement;
@@ -42,7 +45,7 @@ public class PathfinderManager : MonoBehaviour
         Vector2Int startPos = mapDataInterface.GetQuestStart(questIndex);
         Vector2Int goalPos = mapDataInterface.GetQuestGoal(questIndex);
 
-        List<Vector2Int> path = PathfindingAlgorithm.FindShortestPath(startPos, goalPos, mapDataInterface);
+        List<Vector2Int> path = PathfindingAlgorithm.FindShortestPath(startPos, goalPos, mapDataInterface, searchAlgorithm);
         if (path == null || path.Count == 0)
         {
             Debug.LogError("No path found.");
@@ -141,4 +144,11 @@ public class PathfinderManager : MonoBehaviour
     public void ClearPathManual() => ClearDebugPath();
 
     private void OnDestroy() => ClearDebugPath();
+}
+
+public enum SearchAlgorithm
+{
+    BreadthFirstSearch,
+    Dijkstra,
+    AStar
 }

@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
-public class WeightedEdgeDigraph
+public class WeightedEdgeDigraph : Graph
 {
     int vertices;
     int edges;
@@ -81,7 +81,7 @@ public class WeightedEdgeDigraph
         }
     }
 
-    public void AddEdge(DirectedWeightedEdge edge)
+    void AddEdge(DirectedWeightedEdge edge)
     {
         int v = edge.From();
         adjacencyList[v].Add(edge);
